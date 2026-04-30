@@ -1,9 +1,10 @@
-import requests, json, os, re
+import requests, os, re
 
 TOKEN = os.environ["DISCORD_TOKEN"]
 NEOCITIES_KEY = os.environ["NEOCITIES_API_KEY"]
 
 HEADERS = {"Authorization": TOKEN, "Content-Type": "application/json"}
+NEO_HEADERS = {"Authorization": f"Bearer {NEOCITIES_KEY}"}
 
 # Удаляем старые и создаём новый инвайт
 requests.delete("https://discord.com/api/v9/users/@me/invites", headers=HEADERS)
@@ -14,8 +15,8 @@ print(f"Новая ссылка: {url}")
 
 # Скачиваем contact.html с Neocities
 page = requests.get(
-    "https://neocities.org/api/download?sitename=koiayame&filename=contact.html",
-    headers={"Authorization": f"Bearer {NEOCITIES_KEY}"}
+    "https://neocities.org/api/download?path=contact.html",
+    headers=NEO_HEADERS
 ).text
 
 # Заменяем href у кнопки
@@ -26,9 +27,9 @@ new_page = re.sub(
 )
 
 # Загружаем обратно
-requests.post(
+resp = requests.post(
     "https://neocities.org/api/upload",
-    headers={"Authorization": f"Bearer {NEOCITIES_KEY}"},
-    files={"contact.html": ("contact.html", new_page, "text/html")}
+    headers=NEO_HEADERS,
+    files={"contact.html": ("contact.html", new_page.encode("utf-8"), "text/html")}
 )
-print("Сайт обновлён!")
+print(resp.json())
