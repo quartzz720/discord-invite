@@ -1,0 +1,25 @@
+name: Update Discord Invite
+
+on:
+  schedule:
+    - cron: '0 12 * * *'  # каждый день в 12:00 UTC
+  workflow_dispatch:  # ручной запуск тоже
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - run: pip install requests
+      - run: python update_invite.py
+        env:
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+      - run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add invite.json
+          git commit -m "Update invite" || echo "No changes"
+          git push
